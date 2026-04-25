@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const db = require("./src/db/dbConfig.js");
 require("dotenv").config();
+const userRoutes = require("./src/routes/user.routes.js");
 
 const puerto = process.env.PORT;
 
@@ -12,6 +13,8 @@ app.use(cors());
 app.get("/", (req, res) => {
   res.send("Servidor levantado");
 });
+
+app.use("/users", userRoutes);
 
 app.listen(puerto, () => {
   console.log(`Puerto activo en ${puerto}`);

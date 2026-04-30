@@ -6,7 +6,12 @@ const UserModel = {
     const result = await query("SELECT * FROM usuarios;");
     return result;
   },
-
+  findByIdModel: async (id) => {
+    const result = await query("SELECT * FROM usuarios WHERE id_usuario = $1", [
+      id,
+    ]);
+    return result.length > 0;
+  },
   createUser: async (userData) => {
     const { nombre, rol, correo, password_hash } = userData;
 
@@ -17,6 +22,13 @@ const UserModel = {
       [nombre, rol, correo, passwordHaseada],
     );
 
+    return result;
+  },
+  deleteUser: async (id) => {
+    const result = await query("DELETE FROM usuarios WHERE id_usuario = $1", [
+      id,
+    ]);
+    console.log("MODEL DELETE: ", result);
     return result;
   },
 };

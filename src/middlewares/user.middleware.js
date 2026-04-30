@@ -43,4 +43,17 @@ async function validUserData(req, res, next) {
   next();
 }
 
-module.exports = { validUserData };
+async function validUserDelete(req, res, next) {
+  const { id } = req.params;
+
+  const parseId = Number.parseInt(id);
+  if (Number.isNaN(parseId) || parseId <= 0) {
+    return res.status(400).json({
+      error: "El ID proporcionado no es un formato válido.",
+    });
+  }
+
+  next();
+}
+
+module.exports = { validUserData, validUserDelete };

@@ -9,5 +9,10 @@ router.post(
   ValidUsers.validUserData,
   UserController.createUsers,
 );
+router.delete(
+  "/deleteUser/:id",
+  ValidUsers.validUserDelete,
+  UserController.deleteUserController,
+);
 
 module.exports = router;

@@ -23,6 +23,12 @@ async function validUserData(req, res, next) {
       .json({ error: "El nombre no debe ser mayor a 100 caracteres." });
   }
 
+  if (rol === "REPARTIDOR") {
+    return res.status(400).json({
+      error: "El repartidor no puede tener correo y contraseña.",
+    });
+  }
+
   if (rol === "ADMIN" || rol === "LOCAL") {
     if (!correo || !password_hash) {
       return res.status(400).json({

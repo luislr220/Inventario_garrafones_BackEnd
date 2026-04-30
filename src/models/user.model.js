@@ -1,4 +1,5 @@
 const { query } = require("../db/dbConfig");
+const { passwordHash } = require("../utils/hashPassword");
 
 const UserModel = {
   findAll: async () => {
@@ -8,10 +9,12 @@ const UserModel = {
 
   createUser: async (userData) => {
     const { nombre, rol, correo, password_hash } = userData;
-    console.log("NOMBRE EN EL MODEL: ", nombre);
+
+    const passwordHaseada = await passwordHash(password_hash);
+
     const result = await query(
       "INSERT INTO usuarios (nombre,rol,correo,password_hash) VALUES($1, $2, $3, $4)",
-      [nombre, rol, correo, password_hash],
+      [nombre, rol, correo, passwordHaseada],
     );
 
     return result;

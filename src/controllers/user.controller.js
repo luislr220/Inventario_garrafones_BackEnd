@@ -35,20 +35,21 @@ const UserController = {
     try {
       const { id } = req.params;
 
-      const idExist = await UserService.findByIdService(id);
-      if (!idExist) {
+      const response = await UserService.deleteUserService(id);
+
+      if (!response.exito) {
         return res.status(404).json({
-          error: "No se encontro al usuario que se quiere eliminar.",
+          mensaje: response.mensaje,
         });
       }
 
-      const response = await UserService.deleteUserService(id);
-      console.log("RESPONSE DELETE: ", response);
-      res.status(200).json({
-        mensaje: `El usuario ${response.usuario.rows[0]} fue eliminado con exito.`,
-      });
+      if (response.exito) {
+        return res.status(200).json({
+          mensaje: response.mensaje,
+        });
+      }
     } catch (error) {
-      console.log("ERROR AL ELIMINAR USUARIO: ", error.message);
+      console.log("ERROR AL ELIMINAR USUARIO: ", error);
       res.status(500).json({
         error: "Ocurrio un error al eliminar al usuario, intentalo más tarde.",
       });

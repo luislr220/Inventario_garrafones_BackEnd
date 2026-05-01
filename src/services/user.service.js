@@ -8,7 +8,18 @@ const UserService = {
   findByIdService: async (id) => {
     const response = await UserModel.findByIdModel(id);
 
-    return response.rows.length > 0;
+    if (response.rows.length > 0) {
+      return {
+        exito: true,
+        mensaje: "Usuario encontrado.",
+        data: response.rows[0],
+      };
+    } else {
+      return {
+        exito: false,
+        mensaje: "No se encontro al usuario.",
+      };
+    }
   },
   createUser: async (UserData) => {
     const password = UserData.password_hash;
@@ -17,7 +28,20 @@ const UserService = {
     console.log("PASSWORD HASHEADA EN EL SERVICE: ", passwordHaseada);
     const data = { ...UserData, passwordHaseada };
 
-    return await UserModel.createUser(data);
+    const response = await UserModel.createUser(data);
+    console.log("Respuesta de create user: ", response);
+
+    if (response.rowCount > 0) {
+      return {
+        exito: true,
+        mensaje: "Usuario creado con exito.",
+      };
+    } else {
+      return {
+        exito: false,
+        mensaje: "Ocurrio un error al crear el usuario, vuelve a intentarlo",
+      };
+    }
   },
   deleteUserService: async (id) => {
     const idExist = await UserService.findByIdService(id);

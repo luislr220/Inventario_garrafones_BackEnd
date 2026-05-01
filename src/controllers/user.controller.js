@@ -20,10 +20,17 @@ const UserController = {
   },
   createUsers: async (req, res) => {
     try {
-      await UserService.createUser(req.body);
-      res.status(200).json({
-        mensaje: "Usuario creado con exito",
-      });
+      const response = await UserService.createUser(req.body);
+
+      if (response.exito) {
+        res.status(200).json({
+          mensaje: response.mensaje,
+        });
+      } else {
+        res.status(400).json({
+          mensaje: response.mensaje,
+        });
+      }
     } catch (error) {
       console.log("ERROR: ", error);
       res.status(500).json({

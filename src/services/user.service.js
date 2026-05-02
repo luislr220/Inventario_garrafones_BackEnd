@@ -1,9 +1,24 @@
 const UserModel = require("../models/user.model");
+const AppError = require("../utils/appError");
 const { passwordHash } = require("../utils/hashPassword");
 
 const UserService = {
   getAllUsers: async () => {
-    return UserModel.findAll();
+    const response = await UserModel.findAll();
+
+    console.log("RESPONSE DE LISTALL SERVICE: ", response.rows);
+    if (response.rows.length > 0) {
+      return {
+        exito: true,
+        mensaje: "Usuarios listados correctamente",
+        status: 200,
+        data: response.rows,
+      };
+    }
+
+    if (response.rows.length === 0) {
+      throw new AppError("No hay usuarios registrados.", 404);
+    }
   },
   findByIdService: async (id) => {
     const response = await UserModel.findByIdModel(id);
@@ -12,13 +27,14 @@ const UserService = {
       return {
         exito: true,
         mensaje: "Usuario encontrado.",
+        status: 200,
         data: response.rows[0],
       };
     } else {
-      return {
-        exito: false,
-        mensaje: "No se encontro al usuario.",
-      };
+      throw new AppError(
+        "No se encontro al usuario que se quiere eliminar.",
+        404,
+      );
     }
   },
   createUser: async (UserData) => {
@@ -35,23 +51,17 @@ const UserService = {
       return {
         exito: true,
         mensaje: "Usuario creado con exito.",
-      };
-    } else {
-      return {
-        exito: false,
-        mensaje: "Ocurrio un error al crear el usuario, vuelve a intentarlo",
+        status: 200,
       };
     }
+
+    throw new AppError(
+      "Ocurrio un error en la creción del usuario, intentalo de nuevo.",
+      500,
+    );
   },
   deleteUserService: async (id) => {
-    const idExist = await UserService.findByIdService(id);
-    console.log("ID EXITS: ", idExist);
-    if (!idExist) {
-      return {
-        exito: false,
-        mensaje: "No se encontro al usuario que se quiere eliminar.",
-      };
-    }
+    await UserService.findByIdService(id);
 
     const result = await UserModel.deleteUser(id);
 
@@ -60,23 +70,14 @@ const UserService = {
       return {
         exito: true,
         mensaje: `Se ha eliminado a ${nombre} correctamente.`,
+        status: 200,
       };
     }
 
-    return {
-      exito: false,
-      mensaje: "Ocurrio un error, intentalo de nuevo.",
-    };
+    throw new Error("No se pudo eliminar al usuario, intentalo de nuevo.", 500);
   },
   updateUserService: async (id, userData) => {
     const idExist = await UserService.findByIdService(id);
-
-    if (!idExist.exito) {
-      return {
-        exito: false,
-        mensaje: idExist.mensaje,
-      };
-    }
 
     if (
       (idExist.data.rol === "LOCAL" || idExist.data.rol === "ADMIN") &&
@@ -91,10 +92,10 @@ const UserService = {
       !userData.rol &&
       (userData.correo || userData.password_hash)
     ) {
-      return {
-        exito: false,
-        mensaje: `${idExist.data.nombre} es un repartidor, no puede tener correo ni contraseña.`,
-      };
+      throw new AppError(
+        `${idExist.data.nombre} es un repartidor, no puede tener correo ni contraseña.`,
+        400,
+      );
     }
 
     if (
@@ -103,10 +104,10 @@ const UserService = {
       (userData.rol === "LOCAL" || userData.rol === "ADMIN")
     ) {
       if (!userData.correo || !userData.password_hash) {
-        return {
-          exito: false,
-          mensaje: `Para cambiar de repartidor a ${userData.rol.toLowerCase()}, debes proporcionar correo y contraseña.`,
-        };
+        throw new AppError(
+          `Para cambiar de repartidor a ${userData.rol.toLowerCase()}, debes proporcionar correo y contraseña.`,
+          400,
+        );
       }
     }
 
@@ -122,13 +123,15 @@ const UserService = {
       return {
         exito: true,
         mensaje: "Usuario actualizado con exito.",
+        status: 200,
         data: updateUser.rows[0],
       };
     }
-    return {
-      exito: false,
-      mensaje: "Ocurrio un error al actualizar el usuario, intentalo de nuevo.",
-    };
+
+    throw new AppError(
+      "Ocurrio un error al actualizar el usuario, intentalo de nuevo.",
+      500,
+    );
   },
 };
 

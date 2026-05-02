@@ -31,10 +31,7 @@ const UserService = {
         data: response.rows[0],
       };
     } else {
-      throw new AppError(
-        "No se encontro al usuario que se quiere eliminar.",
-        404,
-      );
+      throw new AppError("No se encontro al usuario.", 404);
     }
   },
   createUser: async (UserData) => {
@@ -42,7 +39,7 @@ const UserService = {
 
     const passwordHaseada = await passwordHash(password);
     console.log("PASSWORD HASHEADA EN EL SERVICE: ", passwordHaseada);
-    const data = { ...UserData, passwordHaseada };
+    const data = { ...UserData, password_hash: passwordHaseada };
 
     const response = await UserModel.createUser(data);
     console.log("Respuesta de create user: ", response);
@@ -74,7 +71,10 @@ const UserService = {
       };
     }
 
-    throw new Error("No se pudo eliminar al usuario, intentalo de nuevo.", 500);
+    throw new AppError(
+      "No se pudo eliminar al usuario, intentalo de nuevo.",
+      500,
+    );
   },
   updateUserService: async (id, userData) => {
     const idExist = await UserService.findByIdService(id);

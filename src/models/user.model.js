@@ -32,6 +32,23 @@ const UserModel = {
     );
     return result;
   },
+  updateUserModel: async (id, userData) => {
+    const keys = Object.keys(userData);
+    if (keys.length === 0) return null;
+
+    const setClause = keys
+      .map((keys, index) => `${keys} = $${index + 1}`)
+      .join(", ");
+
+    const values = Object.values(userData);
+    values.push(id);
+
+    const queryUpdate = `UPDATE usuarios SET ${setClause} WHERE id_usuario = $${values.length} RETURNING *`;
+
+    const result = await query(queryUpdate, values);
+
+    return result;
+  },
 };
 
 module.exports = UserModel;

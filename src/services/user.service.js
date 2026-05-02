@@ -68,6 +68,68 @@ const UserService = {
       mensaje: "Ocurrio un error, intentalo de nuevo.",
     };
   },
+  updateUserService: async (id, userData) => {
+    const idExist = await UserService.findByIdService(id);
+
+    if (!idExist.exito) {
+      return {
+        exito: false,
+        mensaje: idExist.mensaje,
+      };
+    }
+
+    if (
+      (idExist.data.rol === "LOCAL" || idExist.data.rol === "ADMIN") &&
+      userData.rol === "REPARTIDOR"
+    ) {
+      userData.correo = null;
+      userData.password_hash = null;
+    }
+
+    if (
+      idExist.data.rol === "REPARTIDOR" &&
+      !userData.rol &&
+      (userData.correo || userData.password_hash)
+    ) {
+      return {
+        exito: false,
+        mensaje: `${idExist.data.nombre} es un repartidor, no puede tener correo ni contraseña.`,
+      };
+    }
+
+    if (
+      idExist.data.rol === "REPARTIDOR" &&
+      userData.rol &&
+      (userData.rol === "LOCAL" || userData.rol === "ADMIN")
+    ) {
+      if (!userData.correo || !userData.password_hash) {
+        return {
+          exito: false,
+          mensaje: `Para cambiar de repartidor a ${userData.rol.toLowerCase()}, debes proporcionar correo y contraseña.`,
+        };
+      }
+    }
+
+    //Hashear password
+    if (userData.password_hash) {
+      const passwordHasheada = await passwordHash(userData.password_hash);
+      userData.password_hash = passwordHasheada;
+    }
+
+    const updateUser = await UserModel.updateUserModel(id, userData);
+
+    if (updateUser && updateUser.rowCount > 0) {
+      return {
+        exito: true,
+        mensaje: "Usuario actualizado con exito.",
+        data: updateUser.rows[0],
+      };
+    }
+    return {
+      exito: false,
+      mensaje: "Ocurrio un error al actualizar el usuario, intentalo de nuevo.",
+    };
+  },
 };
 
 module.exports = UserService;

@@ -62,6 +62,30 @@ const UserController = {
       });
     }
   },
+  updateUserController: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const userData = req.body;
+
+      const response = await UserService.updateUserService(id, userData);
+
+      if (!response.exito) {
+        return res.status(400).json({
+          mensaje: response.mensaje,
+        });
+      }
+
+      return res.status(200).json({
+        mensaje: response.mensaje,
+      });
+    } catch (error) {
+      console.log("ERROR AL ACTUALIZAR USUARIO: ", error);
+      return res.status(500).json({
+        error:
+          "Ocurrio un error al actualizar el usuario, intentalo más tarde.",
+      });
+    }
+  },
 };
 
 module.exports = UserController;

@@ -5,7 +5,11 @@ const UserController = {
     try {
       const users = await UserService.getAllUsers();
 
-      res.status(users.status).json(users);
+      res.status(200).json({
+        exito: true,
+        mensaje: "Usuarios listados correctamente",
+        data: users,
+      });
     } catch (error) {
       console.log(error);
       next(error);
@@ -13,9 +17,11 @@ const UserController = {
   },
   createUsers: async (req, res, next) => {
     try {
-      const response = await UserService.createUser(req.body);
+      await UserService.createUser(req.body);
 
-      return res.status(response.status).json(response);
+      return res
+        .status(201)
+        .json({ exito: true, mensaje: "Usuario creado con exito." });
     } catch (error) {
       console.log("ERROR: ", error);
       next(error);
@@ -27,9 +33,10 @@ const UserController = {
 
       const response = await UserService.deleteUserService(id);
 
-      if (response.exito) {
-        return res.status(response.status).json(response);
-      }
+      return res.status(200).json({
+        exito: true,
+        mensaje: `Se ha eliminado a ${response.nombre} correctamente.`,
+      });
     } catch (error) {
       console.log("ERROR AL ELIMINAR USUARIO: ", error);
       next(error);
@@ -42,7 +49,13 @@ const UserController = {
 
       const response = await UserService.updateUserService(id, userData);
 
-      return res.status(response.status).json(response);
+      return res
+        .status(200)
+        .json({
+          exito: true,
+          mensaje: "Usuario actualizado con exito.",
+          data: response,
+        });
     } catch (error) {
       console.log("ERROR AL ACTUALIZAR USUARIO: ", error);
       next(error);

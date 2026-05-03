@@ -7,32 +7,21 @@ const UserService = {
     const response = await UserModel.findAll();
 
     console.log("RESPONSE DE LISTALL SERVICE: ", response.rows);
-    if (response.rows.length > 0) {
-      return {
-        exito: true,
-        mensaje: "Usuarios listados correctamente",
-        status: 200,
-        data: response.rows,
-      };
-    }
 
     if (response.rows.length === 0) {
       throw new AppError("No hay usuarios registrados.", 404);
     }
+
+    return response.rows;
   },
   findByIdService: async (id) => {
     const response = await UserModel.findByIdModel(id);
 
-    if (response.rows.length > 0) {
-      return {
-        exito: true,
-        mensaje: "Usuario encontrado.",
-        status: 200,
-        data: response.rows[0],
-      };
-    } else {
+    if (response.rows.length === 0) {
       throw new AppError("No se encontro al usuario.", 404);
     }
+
+    return response.rows[0];
   },
   createUser: async (UserData) => {
     const password = UserData.password_hash;
@@ -44,43 +33,34 @@ const UserService = {
     const response = await UserModel.createUser(data);
     console.log("Respuesta de create user: ", response);
 
-    if (response.rowCount > 0) {
-      return {
-        exito: true,
-        mensaje: "Usuario creado con exito.",
-        status: 200,
-      };
+    if (response.rowCount === 0) {
+      throw new AppError(
+        "Ocurrio un error en la creción del usuario, intentalo de nuevo.",
+        500,
+      );
     }
 
-    throw new AppError(
-      "Ocurrio un error en la creción del usuario, intentalo de nuevo.",
-      500,
-    );
+    return true;
   },
   deleteUserService: async (id) => {
     await UserService.findByIdService(id);
 
     const result = await UserModel.deleteUser(id);
 
-    if (result.rowCount > 0) {
-      const nombre = result.rows[0]?.nombre || "usuario";
-      return {
-        exito: true,
-        mensaje: `Se ha eliminado a ${nombre} correctamente.`,
-        status: 200,
-      };
+    if (result.rowCount === 0) {
+      throw new AppError(
+        "No se pudo eliminar al usuario, intentalo de nuevo.",
+        500,
+      );
     }
 
-    throw new AppError(
-      "No se pudo eliminar al usuario, intentalo de nuevo.",
-      500,
-    );
+    return result.rows[0];
   },
   updateUserService: async (id, userData) => {
-    const idExist = await UserService.findByIdService(id);
+    const user = await UserService.findByIdService(id);
 
     if (
-      (idExist.data.rol === "LOCAL" || idExist.data.rol === "ADMIN") &&
+      (user.rol === "LOCAL" || user.rol === "ADMIN") &&
       userData.rol === "REPARTIDOR"
     ) {
       userData.correo = null;
@@ -88,18 +68,18 @@ const UserService = {
     }
 
     if (
-      idExist.data.rol === "REPARTIDOR" &&
+      user.rol === "REPARTIDOR" &&
       !userData.rol &&
       (userData.correo || userData.password_hash)
     ) {
       throw new AppError(
-        `${idExist.data.nombre} es un repartidor, no puede tener correo ni contraseña.`,
+        `${user.nombre} es un repartidor, no puede tener correo ni contraseña.`,
         400,
       );
     }
 
     if (
-      idExist.data.rol === "REPARTIDOR" &&
+      user.rol === "REPARTIDOR" &&
       userData.rol &&
       (userData.rol === "LOCAL" || userData.rol === "ADMIN")
     ) {
@@ -119,19 +99,14 @@ const UserService = {
 
     const updateUser = await UserModel.updateUserModel(id, userData);
 
-    if (updateUser && updateUser.rowCount > 0) {
-      return {
-        exito: true,
-        mensaje: "Usuario actualizado con exito.",
-        status: 200,
-        data: updateUser.rows[0],
-      };
+    if (updateUser.rowCount === 0) {
+      throw new AppError(
+        "Ocurrio un error al actualizar el usuario, intentalo de nuevo.",
+        500,
+      );
     }
 
-    throw new AppError(
-      "Ocurrio un error al actualizar el usuario, intentalo de nuevo.",
-      500,
-    );
+    return updateUser.rows[0];
   },
 };
 

@@ -102,10 +102,12 @@ const UserService = {
   updateUserService: async (id, userData) => {
     const correoDB = await UserModel.findByCorreo(userData.correo);
 
+    const idParse = Number.parseInt(id);
+
     if (correoDB.rows.length > 0) {
       if (
         correoDB.rows[0].correo === userData.correo &&
-        correoDB.rows[0].id_usuario == id
+        correoDB.rows[0].id_usuario === idParse
       ) {
         throw new AppError(
           `El correo ${userData.correo} ya está asociado a tu cuenta.`,
@@ -115,7 +117,7 @@ const UserService = {
 
       if (
         correoDB.rows[0].correo === userData.correo &&
-        correoDB.rows[0].id_usuario != id
+        correoDB.rows[0].id_usuario !== idParse
       ) {
         throw new AppError(
           `El correo ${userData.correo} ya está registrado, intenta con otro.`,

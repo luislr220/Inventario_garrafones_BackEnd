@@ -2,6 +2,40 @@ const UserModel = require("../models/user.model");
 const AppError = require("../utils/appError");
 const { passwordHash } = require("../utils/hashPassword");
 
+const validarCambioDeRol = (user, userData) => {
+  if (
+    (user.rol === "LOCAL" || user.rol === "ADMIN") &&
+    userData.rol === "REPARTIDOR"
+  ) {
+    userData.correo = null;
+    userData.password_hash = null;
+  }
+
+  if (
+    user.rol === "REPARTIDOR" &&
+    !userData.rol &&
+    (userData.correo || userData.password_hash)
+  ) {
+    throw new AppError(
+      `${user.nombre} es un repartidor, no puede tener correo ni contraseña.`,
+      400,
+    );
+  }
+
+  if (
+    user.rol === "REPARTIDOR" &&
+    userData.rol &&
+    (userData.rol === "LOCAL" || userData.rol === "ADMIN")
+  ) {
+    if (!userData.correo || !userData.password_hash) {
+      throw new AppError(
+        `Para cambiar de repartidor a ${userData.rol.toLowerCase()}, debes proporcionar correo y contraseña.`,
+        400,
+      );
+    }
+  }
+};
+
 const UserService = {
   getAllUsers: async () => {
     const response = await UserModel.findAll();
@@ -59,37 +93,7 @@ const UserService = {
   updateUserService: async (id, userData) => {
     const user = await UserService.findByIdService(id);
 
-    if (
-      (user.rol === "LOCAL" || user.rol === "ADMIN") &&
-      userData.rol === "REPARTIDOR"
-    ) {
-      userData.correo = null;
-      userData.password_hash = null;
-    }
-
-    if (
-      user.rol === "REPARTIDOR" &&
-      !userData.rol &&
-      (userData.correo || userData.password_hash)
-    ) {
-      throw new AppError(
-        `${user.nombre} es un repartidor, no puede tener correo ni contraseña.`,
-        400,
-      );
-    }
-
-    if (
-      user.rol === "REPARTIDOR" &&
-      userData.rol &&
-      (userData.rol === "LOCAL" || userData.rol === "ADMIN")
-    ) {
-      if (!userData.correo || !userData.password_hash) {
-        throw new AppError(
-          `Para cambiar de repartidor a ${userData.rol.toLowerCase()}, debes proporcionar correo y contraseña.`,
-          400,
-        );
-      }
-    }
+    validarCambioDeRol(user, userData);
 
     //Hashear password
     if (userData.password_hash) {

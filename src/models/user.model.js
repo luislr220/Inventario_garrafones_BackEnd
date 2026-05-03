@@ -6,6 +6,12 @@ const UserModel = {
     const result = await query("SELECT * FROM usuarios;");
     return result;
   },
+  findByCorreo: async (correo) => {
+    const result = await query("SELECT * FROM usuarios WHERE correo = $1", [
+      correo,
+    ]);
+    return result;
+  },
   findByIdModel: async (id) => {
     const result = await query("SELECT * FROM usuarios WHERE id_usuario = $1", [
       id,

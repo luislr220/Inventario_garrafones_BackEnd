@@ -103,13 +103,6 @@ async function validUserUpdate(req, res, next) {
     }
   }
 
-  if ((correo && !password_hash) || (!correo && password_hash)) {
-    return res.status(400).json({
-      error:
-        "Para actualizar credenciales, debes enviar tanto el correo como la contraseña.",
-    });
-  }
-
   next();
 }
 

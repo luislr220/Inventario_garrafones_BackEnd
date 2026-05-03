@@ -58,6 +58,15 @@ const UserService = {
     return response.rows[0];
   },
   createUser: async (UserData) => {
+    const correoDB = await UserModel.findByCorreo(UserData.correo);
+
+    if (correoDB.rows[0]?.correo === UserData.correo) {
+      throw new AppError(
+        `El correo ${UserData.correo} ya esta registrado, intenta con otro.`,
+        400,
+      );
+    }
+
     const password = UserData.password_hash;
 
     const passwordHaseada = await passwordHash(password);
@@ -91,6 +100,30 @@ const UserService = {
     return result.rows[0];
   },
   updateUserService: async (id, userData) => {
+    const correoDB = await UserModel.findByCorreo(userData.correo);
+
+    if (correoDB.rows.length > 0) {
+      if (
+        correoDB.rows[0].correo === userData.correo &&
+        correoDB.rows[0].id_usuario == id
+      ) {
+        throw new AppError(
+          `El correo ${userData.correo} ya está asociado a tu cuenta.`,
+          400,
+        );
+      }
+
+      if (
+        correoDB.rows[0].correo === userData.correo &&
+        correoDB.rows[0].id_usuario != id
+      ) {
+        throw new AppError(
+          `El correo ${userData.correo} ya está registrado, intenta con otro.`,
+          400,
+        );
+      }
+    }
+
     const user = await UserService.findByIdService(id);
 
     validarCambioDeRol(user, userData);

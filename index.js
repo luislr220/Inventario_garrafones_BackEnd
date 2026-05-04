@@ -3,6 +3,7 @@ const cors = require("cors");
 const db = require("./src/db/dbConfig.js");
 require("dotenv").config();
 const userRoutes = require("./src/routes/user.routes.js");
+const authRoutes = require("./src/routes/auth.routes.js");
 const globalErrorHandler = require("./src/middlewares/errorMiddleware.js");
 
 const puerto = process.env.PORT;
@@ -16,7 +17,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/users", userRoutes);
-
+app.use("/auth", authRoutes);
 
 app.use(globalErrorHandler);
 app.listen(puerto, () => {

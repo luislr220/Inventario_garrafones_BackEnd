@@ -1,5 +1,4 @@
 const { query } = require("../db/dbConfig");
-const { passwordHash } = require("../utils/hashPassword");
 
 const UserModel = {
   findAll: async () => {

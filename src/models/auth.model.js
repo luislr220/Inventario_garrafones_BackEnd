@@ -12,7 +12,7 @@ const AuthModel = {
 
   compararToken2FAModel: async (id_usuario, secret) => {
     const result = await query(
-      "SELECT * FROM login WHERE id_usuario = $1 AND dosFA_secret = $2 RETURNING *",
+      "SELECT * FROM login WHERE id_usuario = $1 AND dosFA_secret = $2;",
       [id_usuario, secret],
     );
 
@@ -24,6 +24,32 @@ const AuthModel = {
       "DELETE FROM login WHERE id_usuario = $1 RETURNING *",
       [id_usuario],
     );
+    return result.rows[0];
+  },
+  registrarIntentosModel: async (id_usuario) => {
+    console.log("ID DE INTENTOS QUE LLEGA AL MODEL: ", id_usuario);
+    const result = await query(
+      "UPDATE usuarios SET intentos_fallidos = COALESCE(intentos_fallidos, 0) + 1 WHERE id_usuario = $1 RETURNING *;",
+      [id_usuario],
+    );
+
+    return result.rows[0];
+  },
+
+  registrarFechaBloqueo: async (id_usuario) => {
+    const result = await query(
+      "UPDATE usuarios SET bloqueado_hasta = CURRENT_TIMESTAMP + INTERVAL '15 minutes' WHERE id_usuario = $1 RETURNING id_usuario, bloqueado_hasta;",
+      [id_usuario],
+    );
+
+    return result.rows[0];
+  },
+  eliminarIntentos: async (id_usuario) => {
+    const result = await query(
+      "UPDATE usuarios SET intentos_fallidos = 0 WHERE id_usuario = $1 RETURNING *;",
+      [id_usuario],
+    );
+
     return result.rows[0];
   },
 };

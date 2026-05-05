@@ -17,6 +17,20 @@ const authController = {
       next(error);
     }
   },
+  verificarTokenController: async (req, res, next) => {
+    try {
+      const { id_usuario, secret } = req.body;
+
+      const response = await AuthService.verificarTokenService(
+        id_usuario,
+        secret,
+      );
+
+      res.status(200).json(response);
+    } catch (error) {
+      next(error);
+    }
+  },
 };
 
 module.exports = authController;
